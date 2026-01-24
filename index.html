@@ -2,103 +2,284 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>DMDB SYSTEMS PRO</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #0d1117; color: white; text-align: center; padding: 40px; }
-    h1 { color: #ff444f; font-size: 42px; margin-bottom: 10px; }
-    p { color: #8b949e; margin-bottom: 40px; }
-    
-    /* BOUTONS D'ACCUEIL (Modifiés pour être distincts) */
-    .auth-buttons { margin-bottom: 30px; padding-bottom: 30px; border-bottom: 1px solid #30363d; }
-    
-    .btn-login { 
-      display: inline-block; margin: 10px; padding: 15px 25px; 
-      background: #2962ff; color: white; border-radius: 8px; 
-      text-decoration: none; font-weight: bold; transition: 0.3s; 
-    }
-    .btn-signup { 
-      display: inline-block; margin: 10px; padding: 15px 25px; 
-      background: #ff444f; /* Rouge Deriv pour l'inscription */
-      color: white; border-radius: 8px; 
-      text-decoration: none; font-weight: bold; transition: 0.3s; 
-    }
-    .btn-turnover {
-      display: inline-block; margin: 10px; padding: 15px 25px; 
-      background: #4caf50; /* Vert pour le turnover */
-      color: white; border-radius: 8px; 
-      text-decoration: none; font-weight: bold; transition: 0.3s;
-    }
-
-    .auth-buttons a:hover { transform: scale(1.05); filter: brightness(1.1); }
-    
-    /* DASHBOARD API */
-    .buttons button { margin: 6px; padding: 12px 22px; background: #30363d; color: white; border: 1px solid #8b949e; border-radius: 8px; cursor: pointer; font-weight: bold; }
-    .buttons button:hover { background: #1f2428; }
-    
-    /* CONSOLE */
-    pre { text-align: left; background: #161b22; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #30363d; color: #00ff00; font-family: monospace; overflow-x: auto; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DMDB TRADING PLATFORM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@deriv/deriv-api/dist/DerivAPIBasic.js"></script>
+  <style>
+    body { background-color: #0e0e0e; color: #ffffff; font-family: 'Segoe UI', sans-serif; }
+    .glass-panel { background: rgba(30, 30, 30, 0.8); backdrop-filter: blur(10px); border: 1px solid #333; border-radius: 12px; }
+    .btn-action { transition: all 0.2s; }
+    .btn-action:active { transform: scale(0.95); }
+    /* Animation du modal */
+    #auth-modal { transition: opacity 0.3s ease; }
+    .hidden { display: none; }
+  </style>
 </head>
-<body>
+<body class="h-screen flex flex-col overflow-hidden">
 
-  <h1>🚀 DMDB SYSTEMS PRO</h1>
-  <p>Terminal de Trading & Affiliation</p>
+  <header class="h-16 border-b border-gray-800 flex items-center justify-between px-6 bg-black">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">🚀</span>
+      <h1 class="text-xl font-bold tracking-wider text-white">DMDB <span class="text-red-500">PRO</span></h1>
+    </div>
+    <div class="flex gap-4">
+      <button onclick="openModal('signup')" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-sm font-bold">Créer Compte</button>
+      <button onclick="openModal('login')" class="px-4 py-2 border border-gray-600 hover:bg-gray-800 rounded text-sm">Connexion</button>
+    </div>
+  </header>
 
-  <div class="auth-buttons">
-    <a href="https://app.deriv.com/bot" target="_blank" class="btn-login">
-      🤖 Se Connecter (Bot)
-    </a>
+  <div class="flex-1 flex flex-col md:flex-row">
+    
+    <div class="flex-1 bg-gray-900 relative border-r border-gray-800">
+      <iframe src="https://charts.deriv.com/deriv-smartcharts/index.html?l=fr&theme=dark" 
+              style="width: 100%; height: 100%; border: none;"></iframe>
+    </div>
 
-    <a href="https://deriv.partners/rx?sidc=9823769E-0309-4002-8042-D9A560322347&utm_campaign=dynamicworks&utm_medium=affiliate&utm_source=CU205810" target="_blank" class="btn-signup">
-      📝 S'inscrire (Hub)
-    </a>
+    <div class="w-full md:w-96 bg-black p-4 flex flex-col gap-4 overflow-y-auto">
+      
+      <div class="glass-panel p-4 flex justify-between items-center">
+        <span class="text-gray-400 text-sm">Statut API</span>
+        <span id="connection-status" class="text-yellow-500 text-xs font-bold">● En attente</span>
+      </div>
 
-    <a href="https://deriv.partners/rx?sidc=3C4560A7-872E-4581-B3A3-FA9B370807A9&utm_campaign=dynamicworks&utm_medium=affiliate&utm_source=CU205810" target="_blank" class="btn-turnover">
-      💼 Compte Turnover
-    </a>
+      <div class="glass-panel p-6 text-center">
+        <p class="text-gray-400 text-sm mb-1">Solde du compte</p>
+        <h2 id="balance-display" class="text-3xl font-bold text-white">$ 0.00</h2>
+        <p id="account-id" class="text-xs text-gray-500 mt-2">Non connecté</p>
+      </div>
+
+      <div class="glass-panel p-4 space-y-3">
+        <h3 class="font-bold text-gray-300 border-b border-gray-700 pb-2">Configuration Bot</h3>
+        
+        <div>
+          <label class="text-xs text-gray-500">Marché</label>
+          <select id="market-select" class="w-full bg-gray-800 border border-gray-700 rounded p-2 text-sm text-white mt-1">
+            <option value="R_100">Volatility 100 Index</option>
+            <option value="R_10">Volatility 10 Index</option>
+            <option value="1HZ100V">Volatility 100 (1s)</option>
+          </select>
+        </div>
+
+        <div class="flex gap-2">
+          <div class="flex-1">
+            <label class="text-xs text-gray-500">Mise ($)</label>
+            <input type="number" id="stake-input" value="0.35" step="0.01" class="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white mt-1">
+          </div>
+          <div class="flex-1">
+            <label class="text-xs text-gray-500">Durée (Ticks)</label>
+            <input type="number" id="duration-input" value="5" class="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white mt-1">
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 mt-2 bg-gray-800 p-2 rounded">
+          <input type="checkbox" id="auto-trade-check" class="w-4 h-4 accent-red-500">
+          <label for="auto-trade-check" class="text-sm cursor-pointer select-none">Activer Auto-Bot (Martingale)</label>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mt-auto">
+        <button id="btn-call" class="btn-action bg-green-600 hover:bg-green-500 py-4 rounded-lg font-bold text-lg flex flex-col items-center">
+          <span>HAUSSE</span>
+          <span class="text-xs opacity-70">CALL</span>
+        </button>
+        <button id="btn-put" class="btn-action bg-red-600 hover:bg-red-500 py-4 rounded-lg font-bold text-lg flex flex-col items-center">
+          <span>BAISSE</span>
+          <span class="text-xs opacity-70">PUT</span>
+        </button>
+      </div>
+
+      <div id="logs" class="h-32 bg-gray-900 rounded p-2 text-xs font-mono text-green-400 overflow-y-auto border border-gray-800">
+        > Système prêt.<br>
+        > Veuillez vous connecter.
+      </div>
+
+    </div>
   </div>
 
-  <div class="buttons">
-    <button id="btn-connect">Test Connexion API</button>
-    <button id="btn-symbols">Voir Marchés</button>
-    <button id="btn-ticks">Prix R_100</button>
-  </div>
+  <div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center">
+    <div class="bg-gray-800 p-8 rounded-xl w-96 border border-gray-700 shadow-2xl relative">
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">✕</button>
+      
+      <div id="form-login" class="hidden">
+        <h2 class="text-2xl font-bold mb-4">Connexion API</h2>
+        <p class="text-sm text-gray-400 mb-4">Pour trader sur DMDB, entrez votre Token API Deriv.</p>
+        <input type="text" id="api-token" placeholder="Ex: a1b2c3d4e5..." class="w-full bg-black border border-gray-600 rounded p-3 text-white mb-4">
+        <button onclick="connectAPI()" class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded font-bold">Valider Token</button>
+        <p class="text-xs text-gray-500 mt-4 text-center">
+          <a href="https://app.deriv.com/account/api-token" target="_blank" class="underline">Où trouver mon token ?</a>
+        </p>
+      </div>
 
-  <pre id="out">Système en attente...</pre>
+      <div id="form-signup" class="hidden">
+        <h2 class="text-2xl font-bold mb-4 text-red-500">Créer Compte</h2>
+        <p class="text-sm text-gray-400 mb-4">Rejoignez l'équipe DMDB Systems Pro.</p>
+        
+        <div class="space-y-3">
+          <input type="email" placeholder="Votre Email" class="w-full bg-black border border-gray-600 rounded p-3 text-white">
+          <div class="flex items-start gap-2">
+            <input type="checkbox" checked class="mt-1">
+            <span class="text-xs text-gray-400">J'accepte les conditions de DMDB Systems.</span>
+          </div>
+          <a href="https://deriv.partners/rx?sidc=9823769E-0309-4002-8042-D9A560322347&utm_campaign=dynamicworks&utm_medium=affiliate&utm_source=CU205810" 
+             target="_blank"
+             class="block w-full bg-red-600 hover:bg-red-500 py-3 rounded font-bold text-center">
+             Continuer l'inscription
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <script>
+    // --- CONFIGURATION ---
     const app_id = 118972; 
-    const connection = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${app_id}`);
-    const api = new DerivAPIBasic({ connection });
-    const out = document.getElementById("out");
+    let api, connection;
+    let balance = 0;
+    let isAutoTrading = false;
 
-    // 1. Connexion
-    document.getElementById("btn-connect").addEventListener("click", () => {
-      out.innerText = "Connexion...";
-      api.ping().then(r => {
-        out.innerText = "✅ API Connectée ! Ping: " + r.ping + "ms";
-      });
-    });
-
-    // 2. Marchés
-    document.getElementById("btn-symbols").addEventListener("click", async () => {
-      out.innerText = "Chargement...";
-      try {
-        const r = await api.activeSymbols({ active_symbols: 'brief', product_type: 'basic' });
-        out.innerText = "✅ Marchés actifs : " + r.active_symbols.length + "\nExemple: " + r.active_symbols[0].symbol;
-      } catch(e) { out.innerText = "Erreur: " + e.message; }
-    });
+    // --- LOGIQUE D'INTERFACE ---
+    const logs = document.getElementById("logs");
     
-    // 3. Prix
-    document.getElementById("btn-ticks").addEventListener("click", () => {
-      out.innerText = "Flux activé...";
-      api.subscribe({ ticks: "R_100" });
-      connection.addEventListener("message", (e) => {
-        const d = JSON.parse(e.data);
-        if(d.tick) out.innerText = `📈 PRIX R_100: ${d.tick.quote}`;
-      });
+    function log(msg) {
+      logs.innerHTML += `> ${msg}<br>`;
+      logs.scrollTop = logs.scrollHeight;
+    }
+
+    function openModal(type) {
+      document.getElementById('auth-modal').classList.remove('hidden');
+      document.getElementById('form-login').classList.add('hidden');
+      document.getElementById('form-signup').classList.add('hidden');
+      
+      if(type === 'login') document.getElementById('form-login').classList.remove('hidden');
+      if(type === 'signup') document.getElementById('form-signup').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('auth-modal').classList.add('hidden');
+    }
+
+    // --- LOGIQUE API DERIV ---
+    
+    // 1. Connexion avec Token
+    function connectAPI() {
+      const token = document.getElementById('api-token').value;
+      if(!token) return alert("Veuillez entrer un token");
+
+      connection = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${app_id}`);
+      api = new DerivAPIBasic({ connection });
+
+      api.authorize(token).then(response => {
+        if(response.error) {
+          log("Erreur: " + response.error.message);
+          return;
+        }
+        
+        // Succès
+        document.getElementById('connection-status').innerText = "● Connecté";
+        document.getElementById('connection-status').className = "text-green-500 text-xs font-bold";
+        document.getElementById('balance-display').innerText = "$ " + response.authorize.balance;
+        document.getElementById('account-id').innerText = "ID: " + response.authorize.loginid;
+        balance = Number(response.authorize.balance);
+        
+        log(`Connecté au compte ${response.authorize.loginid}`);
+        closeModal();
+
+        // Abonnement à la balance pour mise à jour en temps réel
+        api.subscribe({ balance: 1 });
+        connection.addEventListener('message', (e) => {
+          const data = JSON.parse(e.data);
+          if(data.balance) {
+            balance = data.balance.balance;
+            document.getElementById('balance-display').innerText = "$ " + balance;
+          }
+          // Résultat des trades
+          if(data.proposal_open_contract) {
+            const contract = data.proposal_open_contract;
+            if(contract.is_sold) {
+                const profit = contract.profit;
+                const color = profit >= 0 ? 'text-green-500' : 'text-red-500';
+                log(`Trade terminé. Profit: <span class="${color}">${profit}</span>`);
+                
+                // LOGIQUE BOT SIMPLE (MARTINGALE)
+                if(isAutoTrading) {
+                    if(profit < 0) {
+                        // Perte : On double la mise (Exemple simple)
+                        let currentStake = parseFloat(document.getElementById('stake-input').value);
+                        document.getElementById('stake-input').value = (currentStake * 2).toFixed(2);
+                        log("Bot: Martingale activée (Mise doublée)");
+                        setTimeout(() => buyContract('CALL'), 2000); // Relance un trade
+                    } else {
+                        // Gain : Retour mise initiale
+                        document.getElementById('stake-input').value = "0.35"; // Reset
+                        log("Bot: Gain ! Retour mise initiale.");
+                        setTimeout(() => buyContract('CALL'), 2000);
+                    }
+                }
+            }
+          }
+        });
+
+      }).catch(e => log("Erreur connexion: " + e.message));
+    }
+
+    // 2. Fonction d'Achat (Trading)
+    async function buyContract(type) {
+      const stake = document.getElementById('stake-input').value;
+      const duration = document.getElementById('duration-input').value;
+      const symbol = document.getElementById('market-select').value;
+
+      log(`Achat en cours... ${type} sur ${symbol}`);
+
+      try {
+        // Demande de prix (Proposal)
+        const proposal = await api.proposal({
+          proposal: 1,
+          amount: stake,
+          basis: 'stake',
+          contract_type: type === 'CALL' ? 'CALL' : 'PUT',
+          currency: 'USD',
+          duration: duration,
+          duration_unit: 't', // ticks
+          symbol: symbol
+        });
+
+        if(proposal.error) {
+            log("Erreur Prix: " + proposal.error.message);
+            return;
+        }
+
+        // Achat réel (Buy)
+        const buy = await api.buy({ buy: proposal.proposal.id, price: proposal.proposal.ask_price });
+        
+        if(buy.error) {
+            log("Erreur Achat: " + buy.error.message);
+        } else {
+            log(`✅ Trade lancé ID: ${buy.buy.contract_id}`);
+            // On s'abonne au résultat de ce contrat
+            api.subscribe({ proposal_open_contract: 1, contract_id: buy.buy.contract_id });
+        }
+
+      } catch(e) {
+        log("Erreur: " + e.message);
+      }
+    }
+
+    // --- ÉVÉNEMENTS BOUTONS ---
+    document.getElementById('btn-call').addEventListener('click', () => buyContract('CALL'));
+    document.getElementById('btn-put').addEventListener('click', () => buyContract('PUT'));
+
+    // Checkbox Auto-Bot
+    document.getElementById('auto-trade-check').addEventListener('change', (e) => {
+        isAutoTrading = e.target.checked;
+        if(isAutoTrading) {
+            log("⚠️ AUTO-BOT ACTIVÉ : Attention à votre capital.");
+        } else {
+            log("Auto-Bot Désactivé.");
+        }
     });
+
   </script>
 </body>
 </html>
