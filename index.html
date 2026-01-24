@@ -3,380 +3,295 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DMDB PRO TRADING BOT</title>
-  
+  <title>DMDB PRO TRADING</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@deriv/deriv-api/dist/DerivAPIBasic.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
   <style>
-    /* Configuration sombre professionnelle */
-    body { background-color: #0e0e0e; color: #e5e7eb; font-family: 'Roboto', sans-serif; overflow: hidden; }
-    .sidebar { background: #151515; border-right: 1px solid #333; }
-    .top-bar { background: #151515; border-bottom: 1px solid #333; }
-    .chart-container { background: #000; position: relative; }
-    .btn-deriv { background: #ff444f; color: white; transition: 0.2s; }
-    .btn-deriv:hover { background: #d3363f; }
-    .btn-green { background: #00a79e; color: white; }
-    .btn-green:hover { background: #008c84; }
-    
-    /* Animation du modal */
-    .modal { transition: opacity 0.2s ease-in-out; pointer-events: none; opacity: 0; }
-    .modal.active { pointer-events: auto; opacity: 1; }
+    body { background-color: #0e0e0e; color: #e5e7eb; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+    .hidden { display: none !important; }
+    /* Loading Spinner */
+    .loader { border: 4px solid #f3f3f3; border-top: 4px solid #ff444f; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body class="h-screen flex flex-col">
 
-  <header class="top-bar h-16 flex items-center justify-between px-4 z-20">
-    <div class="flex items-center gap-3">
-      <div class="text-2xl font-bold tracking-tighter">
-        <span class="text-white">DMDB</span><span class="text-red-500">BOTS</span>
-      </div>
-      <div class="hidden md:flex text-xs text-gray-500 px-2 border-l border-gray-700 ml-2">
-        <span>Powered by Deriv API</span>
-      </div>
-    </div>
-
-    <div class="flex gap-3">
-        <a href="https://deriv.partners/rx?sidc=9823769E-0309-4002-8042-D9A560322347&utm_campaign=dynamicworks&utm_medium=affiliate&utm_source=CU205810" 
-           target="_blank" 
-           class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded shadow-lg flex items-center gap-2">
-           <i class="fas fa-user-plus"></i> Créer Compte
-        </a>
-
-        <a href="https://deriv.partners/rx?sidi=45CF6395-AE2B-458F-8A70-C941C05310C2&utm_campaign=dynamicworks&utm_medium=affiliate&utm_source=CU205810" 
-           target="_blank" 
-           class="hidden md:flex px-4 py-2 border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black text-sm font-bold rounded transition">
-           <i class="fas fa-handshake"></i> Devenir Partenaire
-        </a>
-
-        <button onclick="toggleModal('login-modal')" 
-           class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded shadow-lg flex items-center gap-2">
-           <i class="fas fa-sign-in-alt"></i> Connexion Bot
-        </button>
-    </div>
-  </header>
-
-  <div class="flex-1 flex overflow-hidden">
-    
-    <div class="flex-1 chart-container relative">
-      <iframe id="deriv-chart" 
-              src="https://charts.deriv.com/deriv-smartcharts/index.html?l=fr&theme=dark" 
-              class="w-full h-full border-none">
-      </iframe>
+  <div id="login-page" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center p-4">
+    <div class="text-center max-w-md w-full">
+      <h1 class="text-4xl font-bold mb-2">DMDB <span class="text-red-600">PRO</span></h1>
+      <p class="text-gray-400 mb-8">Plateforme de Trading Automatisé Professionnelle</p>
       
-      <div id="chart-overlay" class="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-10">
-        <div class="text-center">
-          <h3 class="text-2xl font-bold mb-2">Connectez-vous pour activer le Bot</h3>
-          <p class="text-gray-300 mb-4">Accédez aux stratégies automatiques et au trading en direct.</p>
-          <button onclick="toggleModal('login-modal')" class="px-6 py-3 bg-blue-600 rounded-lg font-bold hover:bg-blue-500 transition">
-            Connecter mon Token API
-          </button>
-        </div>
-      </div>
-    </div>
+      <div class="bg-gray-900 p-8 rounded-xl border border-gray-800 shadow-2xl space-y-4">
+        
+        <button onclick="loginWithDeriv()" class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition flex items-center justify-center gap-3">
+          <i class="fas fa-sign-in-alt"></i> Se Connecter avec Deriv
+        </button>
 
-    <div class="sidebar w-80 flex flex-col p-4 overflow-y-auto">
+        <div class="flex items-center justify-between text-xs text-gray-500 py-4">
+          <span class="w-1/3 border-b border-gray-700"></span>
+          <span>OU</span>
+          <span class="w-1/3 border-b border-gray-700"></span>
+        </div>
+
+        <a href="https://deriv.partners/rx?sidc=9823769E-0309-4002-8042-D9A560322347&utm_campaign=dmdbpro&utm_medium=affiliate&utm_source=CU205810" 
+           target="_blank"
+           class="block w-full py-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition text-center">
+           <i class="fas fa-user-plus"></i> Créer un Compte Trader
+        </a>
+        
+        <a href="https://deriv.partners/rx?sidi=45CF6395-AE2B-458F-8A70-C941C05310C2&utm_campaign=dmdbpro&utm_medium=affiliate&utm_source=CU205810" 
+           target="_blank"
+           class="block mt-2 text-sm text-yellow-500 hover:text-yellow-400 underline">
+           Devenir Partenaire DMDB
+        </a>
+      </div>
       
-      <div class="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
-        <div class="flex justify-between items-center mb-2">
-          <span class="text-xs text-gray-400">SOLDE DU COMPTE</span>
-          <span id="status-dot" class="w-2 h-2 rounded-full bg-red-500"></span>
-        </div>
-        <div class="text-2xl font-bold text-white" id="balance-display">$ 0.00</div>
-        <div class="text-xs text-gray-500 mt-1" id="login-id">Non connecté</div>
-      </div>
-
-      <div class="space-y-4">
-        <div class="p-3 bg-gray-900 rounded border border-gray-800">
-          <label class="text-xs font-bold text-blue-400 uppercase">Stratégie</label>
-          <select id="strategy-select" class="w-full mt-1 bg-black text-white text-sm p-2 rounded border border-gray-700">
-            <option value="manual">Manuel (Call/Put)</option>
-            <option value="martingale">Martingale Auto (x2.1)</option>
-            <option value="dlambert">D'Alembert (Safe)</option>
-          </select>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-xs text-gray-400">Marché</label>
-            <select id="market-select" class="w-full bg-gray-800 text-white text-sm p-2 rounded border border-gray-700">
-              <option value="R_100">Vol. 100 (1s)</option>
-              <option value="R_10">Vol. 10 (1s)</option>
-              <option value="1HZ10V">Vol. 10 (1Hz)</option>
-              <option value="1HZ100V">Vol. 100 (1Hz)</option>
-            </select>
-          </div>
-          <div>
-            <label class="text-xs text-gray-400">Durée (Ticks)</label>
-            <input type="number" id="duration" value="1" min="1" class="w-full bg-gray-800 text-white text-sm p-2 rounded border border-gray-700">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-xs text-gray-400">Mise ($)</label>
-            <input type="number" id="stake" value="0.35" step="0.01" class="w-full bg-gray-800 text-white text-sm p-2 rounded border border-gray-700">
-          </div>
-          <div>
-            <label class="text-xs text-gray-400">Take Profit ($)</label>
-            <input type="number" id="take-profit" value="10" class="w-full bg-gray-800 text-white text-sm p-2 rounded border border-gray-700">
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-6 grid grid-cols-2 gap-3">
-        <button id="btn-call" class="py-4 bg-green-600 hover:bg-green-500 rounded text-white font-bold flex flex-col items-center btn-action">
-          <i class="fas fa-arrow-up mb-1"></i> HAUSSE
-        </button>
-        <button id="btn-put" class="py-4 bg-red-600 hover:bg-red-500 rounded text-white font-bold flex flex-col items-center btn-action">
-          <i class="fas fa-arrow-down mb-1"></i> BAISSE
-        </button>
-      </div>
-
-      <div id="auto-controls" class="hidden mt-4">
-        <button id="btn-start-bot" class="w-full py-3 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded shadow-lg animate-pulse">
-          <i class="fas fa-robot"></i> LANCER LE BOT
-        </button>
-        <button id="btn-stop-bot" class="hidden w-full py-3 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded">
-          <i class="fas fa-stop"></i> STOPPER
-        </button>
-      </div>
-
-      <div class="mt-auto pt-4">
-        <div class="text-xs text-gray-400 mb-1">Journal des trades</div>
-        <div id="console" class="h-32 bg-black border border-gray-800 rounded p-2 text-xs font-mono text-green-400 overflow-y-auto">
-          > Système prêt.<br>
-          > En attente de connexion...
-        </div>
-      </div>
-
+      <p class="mt-8 text-xs text-gray-600">Powered by Deriv API • Secure Connection</p>
     </div>
   </div>
 
-  <div id="login-modal" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-    <div class="bg-gray-900 p-6 rounded-lg border border-gray-700 w-96 shadow-2xl">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold text-white">Connexion API</h2>
-        <button onclick="toggleModal('login-modal')" class="text-gray-400 hover:text-white">&times;</button>
+  <div id="dashboard-page" class="hidden h-full flex flex-col">
+    
+    <header class="h-14 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4">
+      <div class="font-bold text-xl">DMDB<span class="text-red-500">BOTS</span></div>
+      <div class="flex items-center gap-4">
+        <div class="text-right">
+          <div id="user-balance" class="text-green-400 font-mono font-bold text-lg">$ --.--</div>
+          <div id="user-id" class="text-xs text-gray-500">ID: ...</div>
+        </div>
+        <button onclick="logout()" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-gray-300">
+          <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </button>
       </div>
-      <p class="text-sm text-gray-400 mb-4">Entrez votre Token API Deriv pour connecter le Bot à votre compte.</p>
-      
-      <input type="text" id="api-token" placeholder="Ex: a1b2c3d4..." class="w-full p-3 bg-black border border-gray-600 rounded text-white mb-4 focus:border-red-500 outline-none">
-      
-      <button onclick="connectDeriv()" class="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded transition">
-        Valider & Connecter
-      </button>
+    </header>
 
-      <div class="mt-4 text-center">
-        <a href="https://app.deriv.com/account/api-token" target="_blank" class="text-xs text-blue-400 hover:underline">
-          Obtenir mon Token sur Deriv.com
-        </a>
+    <div class="flex-1 flex overflow-hidden">
+      <div class="flex-1 bg-black relative">
+        <iframe src="https://charts.deriv.com/deriv-smartcharts/index.html?l=fr&theme=dark" class="w-full h-full border-none"></iframe>
+      </div>
+
+      <div class="w-80 bg-gray-900 border-l border-gray-800 flex flex-col p-4 overflow-y-auto z-10">
+        
+        <div class="mb-4">
+            <label class="text-xs text-gray-400 uppercase font-bold">Bot Strategy</label>
+            <select id="strategy" class="w-full bg-black border border-gray-700 rounded p-2 mt-1 text-sm">
+                <option value="manual">Manuel (Call/Put)</option>
+                <option value="martingale">Martingale Auto</option>
+            </select>
+        </div>
+
+        <div class="space-y-3 mb-6 p-3 bg-black/30 rounded border border-gray-800">
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="text-[10px] text-gray-500">Mise ($)</label>
+                    <input type="number" id="stake" value="0.35" class="w-full bg-gray-800 border border-gray-700 rounded p-1 text-white">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500">Durée (t)</label>
+                    <input type="number" id="duration" value="1" class="w-full bg-gray-800 border border-gray-700 rounded p-1 text-white">
+                </div>
+            </div>
+            <div>
+                <label class="text-[10px] text-gray-500">Marché</label>
+                <select id="symbol" class="w-full bg-gray-800 border border-gray-700 rounded p-1 text-xs">
+                    <option value="R_100">Volatility 100 (1s)</option>
+                    <option value="R_10">Volatility 10 (1s)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mb-4">
+            <button id="btn-call" class="py-4 bg-green-600 hover:bg-green-500 rounded font-bold">HAUSSE</button>
+            <button id="btn-put" class="py-4 bg-red-600 hover:bg-red-500 rounded font-bold">BAISSE</button>
+        </div>
+        
+        <div id="bot-controls" class="hidden">
+            <button id="start-bot" class="w-full py-2 bg-yellow-600 hover:bg-yellow-500 rounded font-bold mb-2">Lancer Auto</button>
+            <button id="stop-bot" class="hidden w-full py-2 bg-gray-600 rounded font-bold">Stopper</button>
+        </div>
+
+        <div id="logs" class="flex-1 bg-black rounded p-2 text-[10px] font-mono text-green-400 overflow-y-auto border border-gray-800 min-h-[150px]">
+            > Système prêt...
+        </div>
       </div>
     </div>
   </div>
 
   <script>
     // --- CONFIGURATION ---
-    const app_id = 118972; // Votre App ID
-    let connection, api;
-    let balance = 0;
-    let currency = "USD";
-    
-    // Variables Bot
-    let isAutoRunning = false;
+    const app_id = 118972; 
+    let api, connection;
+    let isAuto = false;
     let currentStake = 0.35;
-    let totalProfit = 0;
-    let martingaleMultiplier = 2.1;
-    let tradeType = 'CALL'; // Par défaut
 
-    // --- INTERFACE UTILS ---
-    const log = (msg, type='info') => {
-      const consoleDiv = document.getElementById('console');
-      const color = type === 'win' ? 'text-green-400' : type === 'loss' ? 'text-red-500' : 'text-gray-300';
-      consoleDiv.innerHTML += `<div class="${color}">> ${msg}</div>`;
-      consoleDiv.scrollTop = consoleDiv.scrollHeight;
-    };
-
-    const toggleModal = (id) => {
-      document.getElementById(id).classList.toggle('active');
-    };
-
-    // --- LOGIQUE DERIV ---
-    function connectDeriv() {
-      const token = document.getElementById('api-token').value.trim();
-      if(!token) return alert("Token manquant !");
-
-      log("Connexion en cours...", "info");
-      
-      connection = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${app_id}`);
-      api = new DerivAPIBasic({ connection });
-
-      api.authorize(token).then(res => {
-        if(res.error) {
-          log("Erreur: " + res.error.message, "loss");
-          return;
-        }
-
-        // Succès
-        toggleModal('login-modal');
-        document.getElementById('chart-overlay').style.display = 'none';
-        document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]";
-        
-        const acc = res.authorize;
-        balance = Number(acc.balance);
-        currency = acc.currency;
-        document.getElementById('balance-display').innerText = `${balance.toFixed(2)} ${currency}`;
-        document.getElementById('login-id').innerText = `ID: ${acc.loginid} | ${acc.fullname}`;
-        
-        log(`Connecté: ${acc.loginid}`, "win");
-
-        // Subscribe Balance & Trades
-        api.subscribe({ balance: 1 });
-        api.subscribe({ proposal_open_contract: 1 });
-        api.subscribe({ transaction: 1, subscribe: 1 });
-
-        connection.addEventListener('message', handleMessage);
-
-      }).catch(err => log("Erreur réseau", "loss"));
+    // --- 1. GESTION DE L'AUTHENTIFICATION OAUTH ---
+    
+    // Fonction appelée par le bouton "Se connecter avec Deriv"
+    function loginWithDeriv() {
+        // Redirection vers le serveur officiel d'authentification Deriv
+        const redirect_url = window.location.href; // L'URL actuelle de votre site
+        window.location.href = `https://oauth.deriv.com/oauth2/authorize?app_id=${app_id}&l=fr&brand=deriv`;
     }
 
-    function handleMessage(e) {
-      const data = JSON.parse(e.data);
-      
-      // Mise à jour Balance
-      if(data.balance) {
-        balance = data.balance.balance;
-        document.getElementById('balance-display').innerText = `${balance.toFixed(2)} ${currency}`;
-      }
+    // Fonction qui s'exécute au chargement de la page pour vérifier le retour de Deriv
+    window.onload = async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token1 = urlParams.get('token1');
+        const acct1 = urlParams.get('acct1');
 
-      // Résultat Trade
-      if(data.proposal_open_contract) {
-        const contract = data.proposal_open_contract;
+        if (token1) {
+            // Cas 1 : L'utilisateur revient de Deriv avec un token dans l'URL
+            localStorage.setItem('deriv_token', token1);
+            localStorage.setItem('deriv_acct', acct1);
+            // On nettoie l'URL pour la sécurité
+            window.history.replaceState({}, document.title, "/");
+            initApp(token1);
+        } else {
+            // Cas 2 : On vérifie si un token est déjà sauvegardé
+            const savedToken = localStorage.getItem('deriv_token');
+            if (savedToken) {
+                initApp(savedToken);
+            } else {
+                // Pas de token -> Afficher page de connexion
+                document.getElementById('login-page').classList.remove('hidden');
+            }
+        }
+    };
+
+    function logout() {
+        localStorage.removeItem('deriv_token');
+        localStorage.removeItem('deriv_acct');
+        location.reload();
+    }
+
+    // --- 2. INITIALISATION DE L'APP ---
+    
+    async function initApp(token) {
+        // Masquer login, afficher dashboard
+        document.getElementById('login-page').classList.add('hidden');
+        document.getElementById('dashboard-page').classList.remove('hidden');
+
+        // Connexion WebSocket
+        connection = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${app_id}`);
+        api = new DerivAPIBasic({ connection });
+
+        try {
+            const response = await api.authorize(token);
+            if(response.error) {
+                alert("Session expirée. Veuillez vous reconnecter.");
+                logout();
+                return;
+            }
+
+            // Setup UI avec données réelles
+            const acc = response.authorize;
+            document.getElementById('user-balance').innerText = `$ ${acc.balance}`;
+            document.getElementById('user-id').innerText = `ID: ${acc.loginid}`;
+            currentStake = Number(document.getElementById('stake').value);
+            
+            // Abonnement aux mises à jour
+            api.subscribe({ balance: 1 });
+            api.subscribe({ proposal_open_contract: 1 });
+            
+            connection.addEventListener('message', (e) => {
+                const data = JSON.parse(e.data);
+                if(data.balance) {
+                    document.getElementById('user-balance').innerText = `$ ${data.balance.balance}`;
+                }
+                if(data.proposal_open_contract) {
+                    handleTradeResult(data.proposal_open_contract);
+                }
+            });
+
+            log("Connecté avec succès !");
+
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // --- 3. LOGIQUE TRADING & BOT ---
+
+    const log = (msg) => {
+        const logs = document.getElementById('logs');
+        logs.innerHTML += `<div>> ${msg}</div>`;
+        logs.scrollTop = logs.scrollHeight;
+    }
+
+    async function trade(type) {
+        const amount = isAuto ? currentStake : document.getElementById('stake').value;
+        const duration = document.getElementById('duration').value;
+        const symbol = document.getElementById('symbol').value;
+
+        try {
+            const prop = await api.proposal({
+                proposal: 1, amount: amount, basis: 'stake',
+                contract_type: type, currency: 'USD', 
+                duration: duration, duration_unit: 't', symbol: symbol
+            });
+            
+            if(prop.error) {
+                log("Erreur: " + prop.error.message);
+                if(isAuto) stopBot(); // Sécurité
+                return;
+            }
+
+            const buy = await api.buy({ buy: prop.proposal.id, price: prop.proposal.ask_price });
+            log(`Trade ${type} lancé ($${amount})...`);
+
+        } catch(e) {
+            log("Erreur : " + e.message);
+        }
+    }
+
+    function handleTradeResult(contract) {
         if(contract.is_sold) {
-          const profit = Number(contract.profit);
-          if(profit > 0) {
-            log(`GAIN: +${profit} ${currency}`, "win");
-            if(isAutoRunning) botLogic(true);
-          } else {
-            log(`PERTE: ${profit} ${currency}`, "loss");
-            if(isAutoRunning) botLogic(false);
-          }
+            const profit = Number(contract.profit);
+            if(profit > 0) {
+                log(`WIN: +$${profit}`);
+                if(isAuto) {
+                    currentStake = Number(document.getElementById('stake').value); // Reset
+                    setTimeout(() => trade('CALL'), 2000);
+                }
+            } else {
+                log(`LOSS: ${profit}`);
+                if(isAuto) {
+                    currentStake = currentStake * 2.1; // Martingale
+                    log(`Martingale -> $${currentStake.toFixed(2)}`);
+                    setTimeout(() => trade('CALL'), 2000);
+                }
+            }
         }
-      }
     }
 
-    // --- ACHAT CONTRAT ---
-    async function buy(type) {
-      const amount = isAutoRunning ? currentStake : document.getElementById('stake').value;
-      const duration = document.getElementById('duration').value;
-      const symbol = document.getElementById('market-select').value;
+    // Boutons
+    document.getElementById('btn-call').onclick = () => !isAuto && trade('CALL');
+    document.getElementById('btn-put').onclick = () => !isAuto && trade('PUT');
+    
+    // Logique UI Bot
+    document.getElementById('strategy').onchange = (e) => {
+        const auto = e.target.value === 'martingale';
+        document.getElementById('bot-controls').classList.toggle('hidden', !auto);
+    };
 
-      log(`Achat ${type} sur ${symbol}...`, "info");
+    document.getElementById('start-bot').onclick = () => {
+        isAuto = true;
+        document.getElementById('start-bot').classList.add('hidden');
+        document.getElementById('stop-bot').classList.remove('hidden');
+        currentStake = Number(document.getElementById('stake').value);
+        trade('CALL');
+    };
 
-      try {
-        const proposal = await api.proposal({
-          proposal: 1,
-          amount: amount,
-          basis: 'stake',
-          contract_type: type,
-          currency: currency,
-          duration: duration,
-          duration_unit: 't',
-          symbol: symbol
-        });
-
-        if(proposal.error) {
-          log("Erreur Proposal: " + proposal.error.message, "loss");
-          return;
-        }
-
-        const buyId = proposal.proposal.id;
-        await api.buy({ buy: buyId, price: proposal.proposal.ask_price });
-        log("Trade lancé !", "info");
-
-      } catch(err) {
-        log("Erreur Achat: " + err.message, "loss");
-      }
-    }
-
-    // --- LOGIQUE DU BOT (Simple Martingale) ---
-    function botLogic(lastWin) {
-      if(!isAutoRunning) return;
-
-      const baseStake = Number(document.getElementById('stake').value);
-      const takeProfit = Number(document.getElementById('take-profit').value);
-
-      totalProfit += lastWin ? (currentStake * 0.95) : -currentStake; // Approx payout
-
-      if(totalProfit >= takeProfit) {
-        stopBot();
-        log("OBJECTIF ATTEINT ! 🏆", "win");
-        return;
-      }
-
-      if(lastWin) {
-        currentStake = baseStake; // Reset mise
-        log("Bot: Reset mise initiale", "info");
-      } else {
-        currentStake = currentStake * martingaleMultiplier; // Martingale
-        log(`Bot: Martingale x${martingaleMultiplier} -> ${currentStake.toFixed(2)}`, "info");
-      }
-
-      // Délai avant prochain trade
-      setTimeout(() => buy(tradeType), 2000);
-    }
-
-    function startBot() {
-      isAutoRunning = true;
-      currentStake = Number(document.getElementById('stake').value);
-      totalProfit = 0;
-      
-      document.getElementById('btn-start-bot').classList.add('hidden');
-      document.getElementById('btn-stop-bot').classList.remove('hidden');
-      
-      // Désactiver inputs
-      document.getElementById('stake').disabled = true;
-      
-      log("BOT DÉMARRÉ 🤖", "win");
-      buy(tradeType);
-    }
+    document.getElementById('stop-bot').onclick = stopBot;
 
     function stopBot() {
-      isAutoRunning = false;
-      document.getElementById('btn-start-bot').classList.remove('hidden');
-      document.getElementById('btn-stop-bot').classList.add('hidden');
-      document.getElementById('stake').disabled = false;
-      log("BOT STOPPÉ", "loss");
+        isAuto = false;
+        document.getElementById('start-bot').classList.remove('hidden');
+        document.getElementById('stop-bot').classList.add('hidden');
+        log("Bot Arrêté.");
     }
-
-    // --- EVENTS UI ---
-    document.getElementById('btn-call').addEventListener('click', () => {
-      if(isAutoRunning) return;
-      buy('CALL');
-    });
-    
-    document.getElementById('btn-put').addEventListener('click', () => {
-      if(isAutoRunning) return;
-      buy('PUT');
-    });
-
-    document.getElementById('strategy-select').addEventListener('change', (e) => {
-      const controls = document.getElementById('auto-controls');
-      const manualBtns = document.querySelectorAll('.btn-action');
-      
-      if(e.target.value === 'manual') {
-        controls.classList.add('hidden');
-        manualBtns.forEach(b => b.classList.remove('opacity-50', 'pointer-events-none'));
-      } else {
-        controls.classList.remove('hidden');
-        manualBtns.forEach(b => b.classList.add('opacity-50', 'pointer-events-none'));
-        log("Mode Auto activé : Configurez et lancez.", "info");
-      }
-    });
-
-    document.getElementById('btn-start-bot').addEventListener('click', startBot);
-    document.getElementById('btn-stop-bot').addEventListener('click', stopBot);
 
   </script>
 </body>
