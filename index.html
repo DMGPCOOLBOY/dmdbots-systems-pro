@@ -4,9 +4,9 @@
         <meta charset="UTF-8" />
         <link rel="icon" type="image/svg+xml" href="/deriv-logo.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-
+        <title>DMDB PRO BOT | Trading Automatisé</title>
+        
         <link rel="manifest" href="/manifest.json" />
-
         <meta name="theme-color" content="#ff444f" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -14,24 +14,53 @@
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#ff444f" />
         <meta name="msapplication-tap-highlight" content="no" />
-
-        <link rel="apple-touch-icon" href="/assets/icons/pwa/icon-152x152.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="/assets/icons/pwa/icon-152x152.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/pwa/icon-192x192.png" />
-        <meta name="title" content="Build a trading bot without coding | Deriv Bot." />
-        <meta
-            name="description"
-            content="Import your current bot or learn how to create a trading bot from scratch with our detailed guides, FAQs, and tutorials. Start with a quick strategy!"
-        />
-        <meta property="og:title" content="Deriv Bot" />
-        <meta
-            property="og:description"
-            content="Import your current bot or learn how to create a trading bot from scratch with our detailed guides, FAQs, and tutorials. Start with a quick strategy!"
-        />
-        <title>Build a trading bot without coding | Deriv Bot.</title>
+        
         <style>
-            :root {
-                font-size: 62.5%;
+            :root { font-size: 62.5%; }
+            
+            /* Votre panneau personnalisé qui flotte au-dessus du Bot */
+            #dmdb-panel {
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background: rgba(16, 16, 16, 0.95);
+                border: 1px solid #333;
+                border-radius: 12px;
+                padding: 15px;
+                z-index: 9999; /* Pour être sûr d'être au-dessus */
+                box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+                font-family: sans-serif;
+                color: white;
+                width: 220px;
+            }
+            #dmdb-panel h3 {
+                margin: 0 0 10px 0;
+                font-size: 14px;
+                color: #ff444f;
+                font-weight: bold;
+                text-align: center;
+                text-transform: uppercase;
+            }
+            .dmdb-btn {
+                display: block;
+                width: 100%;
+                padding: 10px;
+                margin-bottom: 8px;
+                text-align: center;
+                text-decoration: none;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: bold;
+                transition: 0.2s;
+            }
+            .btn-signup { background: #ff444f; color: white; }
+            .btn-signup:hover { background: #d4363f; }
+            
+            .btn-partner { background: transparent; border: 1px solid #ffc107; color: #ffc107; }
+            .btn-partner:hover { background: #ffc107; color: black; }
+            
+            .btn-close {
+                position: absolute; top: 5px; right: 8px; cursor: pointer; color: #777; font-size: 12px;
             }
         </style>
     </head>
@@ -40,91 +69,53 @@
         <div id="modal_root" class="modal-root"></div>
         <div id="popup_root" class="popup-root"></div>
         <div id="root"></div>
+
+        <div id="dmdb-panel">
+            <span class="btn-close" onclick="document.getElementById('dmdb-panel').style.display='none'">✕</span>
+            <h3>DMDB PRO</h3>
+            
+            <a href="https://deriv.partners/rx?sidc=9823769E-0309-4002-8042-D9A560322347&utm_campaign=dmdb_bot&utm_medium=affiliate&utm_source=CU205810" 
+               target="_blank" class="dmdb-btn btn-signup">
+               Créer Compte Trader
+            </a>
+
+            <a href="https://deriv.partners/rx?sidi=45CF6395-AE2B-458F-8A70-C941C05310C2&utm_campaign=dmdb_bot&utm_medium=affiliate&utm_source=CU205810" 
+               target="_blank" class="dmdb-btn btn-partner">
+               Devenir Partenaire
+            </a>
+            
+            <div style="text-align:center; font-size:10px; color:#555; margin-top:5px;">
+                Powered by Deriv API
+            </div>
+        </div>
+
+        <script>
+            // On essaie de forcer l'App ID dans la configuration locale
+            // Le logiciel Deriv lit souvent le LocalStorage au démarrage
+            try {
+                // 1. Définir votre App ID
+                const myAppId = "118972";
+                
+                // 2. Injecter dans les stockages connus de Deriv
+                localStorage.setItem('config.app_id', myAppId);
+                localStorage.setItem('app_id', myAppId);
+                
+                console.log("DMDB PRO: App ID " + myAppId + " injecté.");
+            } catch (e) {
+                console.error("Erreur injection ID:", e);
+            }
+        </script>
+
         <script type="text/javascript" defer>
+            // LiveChat Script (Original)
             window.__lc = window.__lc || {};
             window.__lc.license = 12049137;
             window.__lc.asyncInit = true;
             (function (n, t, c) {
-                function i(n) {
-                    return e._h ? e._h.apply(null, n) : e._q.push(n);
-                }
-                var e = {
-                    _q: [],
-                    _h: null,
-                    _v: '2.0',
-                    on: function () {
-                        i(['on', c.call(arguments)]);
-                    },
-                    once: function () {
-                        i(['once', c.call(arguments)]);
-                    },
-                    off: function () {
-                        i(['off', c.call(arguments)]);
-                    },
-                    get: function () {
-                        if (!e._h) throw new Error('[LiveChatWidget] You can’t use getters before load.');
-                        return i(['get', c.call(arguments)]);
-                    },
-                    call: function () {
-                        i(['call', c.call(arguments)]);
-                    },
-                    init: function () {
-                        setTimeout(() => {
-                            var n = t.createElement('script');
-                            ((n.async = !0),
-                                (n.type = 'text/javascript'),
-                                (n.src = 'https://cdn.livechatinc.com/tracking.js'),
-                                t.head.appendChild(n));
-                        }, 3000);
-                    },
-                };
+                function i(n) { return e._h ? e._h.apply(null, n) : e._q.push(n); }
+                var e = { _q: [], _h: null, _v: '2.0', on: function () { i(['on', c.call(arguments)]); }, once: function () { i(['once', c.call(arguments)]); }, off: function () { i(['off', c.call(arguments)]); }, get: function () { if (!e._h) throw new Error('[LiveChatWidget] You can’t use getters before load.'); return i(['get', c.call(arguments)]); }, call: function () { i(['call', c.call(arguments)]); }, init: function () { setTimeout(() => { var n = t.createElement('script'); ((n.async = !0), (n.type = 'text/javascript'), (n.src = 'https://cdn.livechatinc.com/tracking.js'), t.head.appendChild(n)); }, 3000); }, };
                 (!n.__lc.asyncInit && e.init(), (n.LiveChatWidget = n.LiveChatWidget || e));
             })(window, document, [].slice);
-        </script>
-        <script>
-            // Check browser compatibility and prevent service worker issues
-            const userAgent = navigator.userAgent.toLowerCase();
-            const isFirefox = userAgent.includes('firefox');
-            const isSafari = userAgent.includes('safari') && !userAgent.includes('chrome');
-            const shouldSkipSW = isFirefox || isSafari;
-
-            if (shouldSkipSW) {
-                const browserName = isFirefox ? 'Firefox' : 'Safari';
-                console.log(
-                    `[HTML] ${browserName} detected - preventing service worker registration to avoid chunk loading issues`
-                );
-
-                // Cleanup any existing service workers
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker
-                        .getRegistrations()
-                        .then(registrations => {
-                            registrations.forEach(registration => {
-                                console.log(`[HTML] Unregistering existing SW for ${browserName}:`, registration.scope);
-                                registration.unregister();
-                            });
-                        })
-                        .catch(error => {
-                            console.error('[HTML] Failed to cleanup service workers:', error);
-                        });
-                }
-            }
-
-            // Check online/offline status
-            console.log('[HTML] Online status:', navigator.onLine);
-            window.addEventListener('online', () => {
-                console.log('[HTML] Back online');
-            });
-            window.addEventListener('offline', () => {
-                console.log('[HTML] Gone offline');
-            });
-
-            // Listen for service worker messages if registered by PWA utils (non-problematic browsers only)
-            if ('serviceWorker' in navigator && !shouldSkipSW) {
-                navigator.serviceWorker.addEventListener('message', event => {
-                    console.log('[HTML] Message from service worker:', event.data);
-                });
-            }
         </script>
     </body>
 </html>
