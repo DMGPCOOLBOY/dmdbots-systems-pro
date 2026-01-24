@@ -3,25 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <title>DMDB SYSTEMS PRO</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://unpkg.com/@deriv/deriv-api/dist/DerivAPIBasic.js"></script>
   <style>
     body { font-family: Arial, sans-serif; background: #0d1117; color: white; text-align: center; padding: 40px; }
     h1 { color: #ff444f; font-size: 42px; margin-bottom: 10px; }
     p { color: #8b949e; margin-bottom: 40px; }
     
-    /* BOUTONS PARTENAIRES */
+    /* BOUTONS D'ACCUEIL (Modifiés pour être distincts) */
     .auth-buttons { margin-bottom: 30px; padding-bottom: 30px; border-bottom: 1px solid #30363d; }
-    .auth-buttons a { display: inline-block; margin: 10px; padding: 15px 25px; background: #2962ff; color: white; border-radius: 8px; text-decoration: none; font-weight: bold; }
-    .auth-buttons a:hover { background: #0039cb; }
     
-    /* DASHBOARD */
-    .buttons button { margin: 6px; padding: 12px 22px; background: #00c853; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-    .buttons button:hover { opacity: 0.9; }
+    .btn-login { 
+      display: inline-block; margin: 10px; padding: 15px 25px; 
+      background: #2962ff; color: white; border-radius: 8px; 
+      text-decoration: none; font-weight: bold; transition: 0.3s; 
+    }
+    .btn-signup { 
+      display: inline-block; margin: 10px; padding: 15px 25px; 
+      background: #ff444f; /* Rouge Deriv pour l'inscription */
+      color: white; border-radius: 8px; 
+      text-decoration: none; font-weight: bold; transition: 0.3s; 
+    }
+    .btn-turnover {
+      display: inline-block; margin: 10px; padding: 15px 25px; 
+      background: #4caf50; /* Vert pour le turnover */
+      color: white; border-radius: 8px; 
+      text-decoration: none; font-weight: bold; transition: 0.3s;
+    }
+
+    .auth-buttons a:hover { transform: scale(1.05); filter: brightness(1.1); }
+    
+    /* DASHBOARD API */
+    .buttons button { margin: 6px; padding: 12px 22px; background: #30363d; color: white; border: 1px solid #8b949e; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    .buttons button:hover { background: #1f2428; }
     
     /* CONSOLE */
     pre { text-align: left; background: #161b22; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #30363d; color: #00ff00; font-family: monospace; overflow-x: auto; }
   </style>
+  <script src="https://unpkg.com/@deriv/deriv-api/dist/DerivAPIBasic.js"></script>
 </head>
 <body>
 
@@ -29,55 +46,57 @@
   <p>Terminal de Trading & Affiliation</p>
 
   <div class="auth-buttons">
-    <a href="https://deriv.partners/rx?sidc=9823769E-0309-4002-8042-D9A560322347&utm_campaign=dynamicworks&utm_medium=affiliate&utm_source=CU205810" target="_blank">🔑 Connexion / Inscription</a>
-    <a href="https://deriv.partners/rx?sidc=3C4560A7-872E-4581-B3A3-FA9B370807A9&utm_campaign=dynamicworks&utm_medium=affiliate&utm_source=CU205810" target="_blank">💼 Compte Turnover</a>
+    <a href="https://app.deriv.com/bot" target="_blank" class="btn-login">
+      🤖 Se Connecter (Bot)
+    </a>
+
+    <a href="https://deriv.partners/rx?sidc=9823769E-0309-4002-8042-D9A560322347&utm_campaign=dynamicworks&utm_medium=affiliate&utm_source=CU205810" target="_blank" class="btn-signup">
+      📝 S'inscrire (Hub)
+    </a>
+
+    <a href="https://deriv.partners/rx?sidc=3C4560A7-872E-4581-B3A3-FA9B370807A9&utm_campaign=dynamicworks&utm_medium=affiliate&utm_source=CU205810" target="_blank" class="btn-turnover">
+      💼 Compte Turnover
+    </a>
   </div>
 
   <div class="buttons">
-    <button id="btn-connect">Connect API</button>
-    <button id="btn-balance">Balance</button>
-    <button id="btn-symbols">Marchés</button>
+    <button id="btn-connect">Test Connexion API</button>
+    <button id="btn-symbols">Voir Marchés</button>
     <button id="btn-ticks">Prix R_100</button>
   </div>
 
   <pre id="out">Système en attente...</pre>
 
   <script>
-    // --- VOTRE APP ID ---
     const app_id = 118972; 
-    
-    // Connexion WebSocket
     const connection = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${app_id}`);
     const api = new DerivAPIBasic({ connection });
     const out = document.getElementById("out");
 
     // 1. Connexion
     document.getElementById("btn-connect").addEventListener("click", () => {
-      out.innerText = "Connexion aux serveurs...";
+      out.innerText = "Connexion...";
       api.ping().then(r => {
-        out.innerText = "Connecté avec succès ! Ping: " + r.ping + "ms";
+        out.innerText = "✅ API Connectée ! Ping: " + r.ping + "ms";
       });
     });
 
-    // 2. Balance (nécessite token, mais on met le placeholder)
-    document.getElementById("btn-balance").addEventListener("click", () => {
-      out.innerText = "Veuillez vous connecter via le bouton bleu ci-dessus pour voir votre solde.";
-    });
-
-    // 3. Marchés
+    // 2. Marchés
     document.getElementById("btn-symbols").addEventListener("click", async () => {
-      out.innerText = "Chargement des marchés...";
-      const r = await api.activeSymbols({ active_symbols: 'brief', product_type: 'basic' });
-      out.innerText = "Marchés actifs : " + r.active_symbols.length + " trouvés.\nExemple: " + r.active_symbols[0].symbol;
+      out.innerText = "Chargement...";
+      try {
+        const r = await api.activeSymbols({ active_symbols: 'brief', product_type: 'basic' });
+        out.innerText = "✅ Marchés actifs : " + r.active_symbols.length + "\nExemple: " + r.active_symbols[0].symbol;
+      } catch(e) { out.innerText = "Erreur: " + e.message; }
     });
     
-    // 4. Prix en direct
+    // 3. Prix
     document.getElementById("btn-ticks").addEventListener("click", () => {
-      out.innerText = "Flux R_100 activé...";
+      out.innerText = "Flux activé...";
       api.subscribe({ ticks: "R_100" });
       connection.addEventListener("message", (e) => {
         const d = JSON.parse(e.data);
-        if(d.tick) out.innerText = `PRIX R_100: ${d.tick.quote} (Epoch: ${d.tick.epoch})`;
+        if(d.tick) out.innerText = `📈 PRIX R_100: ${d.tick.quote}`;
       });
     });
   </script>
