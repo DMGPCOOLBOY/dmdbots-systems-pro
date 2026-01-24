@@ -6,7 +6,7 @@ import APIMiddleware from './api-middleware';
 
 export const generateDerivApiInstance = () => {
     const cleanedServer = 'ws.derivws.com';
-    const cleanedAppId = '118972';
+    const cleanedAppId = '122869';
     const socket_url = `wss://${cleanedServer}/websockets/v3?app_id=${cleanedAppId}&l=${getInitialLanguage()}&brand=${website_name.toLowerCase()}`;
     const deriv_socket = new WebSocket(socket_url);
     const deriv_api = new DerivAPIBasic({
