@@ -1,298 +1,130 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DMDB PRO TRADING</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@deriv/deriv-api/dist/DerivAPIBasic.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+<!doctype html>
+<html lang="en" dir="auto">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/deriv-logo.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-  <style>
-    body { background-color: #0e0e0e; color: #e5e7eb; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
-    .hidden { display: none !important; }
-    /* Loading Spinner */
-    .loader { border: 4px solid #f3f3f3; border-top: 4px solid #ff444f; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-  </style>
-</head>
-<body class="h-screen flex flex-col">
+        <link rel="manifest" href="/manifest.json" />
 
-  <div id="login-page" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center p-4">
-    <div class="text-center max-w-md w-full">
-      <h1 class="text-4xl font-bold mb-2">DMDB <span class="text-red-600">PRO</span></h1>
-      <p class="text-gray-400 mb-8">Plateforme de Trading Automatisé Professionnelle</p>
-      
-      <div class="bg-gray-900 p-8 rounded-xl border border-gray-800 shadow-2xl space-y-4">
-        
-        <button onclick="loginWithDeriv()" class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition flex items-center justify-center gap-3">
-          <i class="fas fa-sign-in-alt"></i> Se Connecter avec Deriv
-        </button>
+        <meta name="theme-color" content="#ff444f" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Deriv Bot" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-TileColor" content="#ff444f" />
+        <meta name="msapplication-tap-highlight" content="no" />
 
-        <div class="flex items-center justify-between text-xs text-gray-500 py-4">
-          <span class="w-1/3 border-b border-gray-700"></span>
-          <span>OU</span>
-          <span class="w-1/3 border-b border-gray-700"></span>
-        </div>
-
-        <a href="https://deriv.partners/rx?sidc=9823769E-0309-4002-8042-D9A560322347&utm_campaign=dmdbpro&utm_medium=affiliate&utm_source=CU205810" 
-           target="_blank"
-           class="block w-full py-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition text-center">
-           <i class="fas fa-user-plus"></i> Créer un Compte Trader
-        </a>
-        
-        <a href="https://deriv.partners/rx?sidi=45CF6395-AE2B-458F-8A70-C941C05310C2&utm_campaign=dmdbpro&utm_medium=affiliate&utm_source=CU205810" 
-           target="_blank"
-           class="block mt-2 text-sm text-yellow-500 hover:text-yellow-400 underline">
-           Devenir Partenaire DMDB
-        </a>
-      </div>
-      
-      <p class="mt-8 text-xs text-gray-600">Powered by Deriv API • Secure Connection</p>
-    </div>
-  </div>
-
-  <div id="dashboard-page" class="hidden h-full flex flex-col">
-    
-    <header class="h-14 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4">
-      <div class="font-bold text-xl">DMDB<span class="text-red-500">BOTS</span></div>
-      <div class="flex items-center gap-4">
-        <div class="text-right">
-          <div id="user-balance" class="text-green-400 font-mono font-bold text-lg">$ --.--</div>
-          <div id="user-id" class="text-xs text-gray-500">ID: ...</div>
-        </div>
-        <button onclick="logout()" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-gray-300">
-          <i class="fas fa-sign-out-alt"></i> Déconnexion
-        </button>
-      </div>
-    </header>
-
-    <div class="flex-1 flex overflow-hidden">
-      <div class="flex-1 bg-black relative">
-        <iframe src="https://charts.deriv.com/deriv-smartcharts/index.html?l=fr&theme=dark" class="w-full h-full border-none"></iframe>
-      </div>
-
-      <div class="w-80 bg-gray-900 border-l border-gray-800 flex flex-col p-4 overflow-y-auto z-10">
-        
-        <div class="mb-4">
-            <label class="text-xs text-gray-400 uppercase font-bold">Bot Strategy</label>
-            <select id="strategy" class="w-full bg-black border border-gray-700 rounded p-2 mt-1 text-sm">
-                <option value="manual">Manuel (Call/Put)</option>
-                <option value="martingale">Martingale Auto</option>
-            </select>
-        </div>
-
-        <div class="space-y-3 mb-6 p-3 bg-black/30 rounded border border-gray-800">
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <label class="text-[10px] text-gray-500">Mise ($)</label>
-                    <input type="number" id="stake" value="0.35" class="w-full bg-gray-800 border border-gray-700 rounded p-1 text-white">
-                </div>
-                <div>
-                    <label class="text-[10px] text-gray-500">Durée (t)</label>
-                    <input type="number" id="duration" value="1" class="w-full bg-gray-800 border border-gray-700 rounded p-1 text-white">
-                </div>
-            </div>
-            <div>
-                <label class="text-[10px] text-gray-500">Marché</label>
-                <select id="symbol" class="w-full bg-gray-800 border border-gray-700 rounded p-1 text-xs">
-                    <option value="R_100">Volatility 100 (1s)</option>
-                    <option value="R_10">Volatility 10 (1s)</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2 mb-4">
-            <button id="btn-call" class="py-4 bg-green-600 hover:bg-green-500 rounded font-bold">HAUSSE</button>
-            <button id="btn-put" class="py-4 bg-red-600 hover:bg-red-500 rounded font-bold">BAISSE</button>
-        </div>
-        
-        <div id="bot-controls" class="hidden">
-            <button id="start-bot" class="w-full py-2 bg-yellow-600 hover:bg-yellow-500 rounded font-bold mb-2">Lancer Auto</button>
-            <button id="stop-bot" class="hidden w-full py-2 bg-gray-600 rounded font-bold">Stopper</button>
-        </div>
-
-        <div id="logs" class="flex-1 bg-black rounded p-2 text-[10px] font-mono text-green-400 overflow-y-auto border border-gray-800 min-h-[150px]">
-            > Système prêt...
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // --- CONFIGURATION ---
-    const app_id = 118972; 
-    let api, connection;
-    let isAuto = false;
-    let currentStake = 0.35;
-
-    // --- 1. GESTION DE L'AUTHENTIFICATION OAUTH ---
-    
-    // Fonction appelée par le bouton "Se connecter avec Deriv"
-    function loginWithDeriv() {
-        // Redirection vers le serveur officiel d'authentification Deriv
-        const redirect_url = window.location.href; // L'URL actuelle de votre site
-        window.location.href = `https://oauth.deriv.com/oauth2/authorize?app_id=${app_id}&l=fr&brand=deriv`;
-    }
-
-    // Fonction qui s'exécute au chargement de la page pour vérifier le retour de Deriv
-    window.onload = async () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const token1 = urlParams.get('token1');
-        const acct1 = urlParams.get('acct1');
-
-        if (token1) {
-            // Cas 1 : L'utilisateur revient de Deriv avec un token dans l'URL
-            localStorage.setItem('deriv_token', token1);
-            localStorage.setItem('deriv_acct', acct1);
-            // On nettoie l'URL pour la sécurité
-            window.history.replaceState({}, document.title, "/");
-            initApp(token1);
-        } else {
-            // Cas 2 : On vérifie si un token est déjà sauvegardé
-            const savedToken = localStorage.getItem('deriv_token');
-            if (savedToken) {
-                initApp(savedToken);
-            } else {
-                // Pas de token -> Afficher page de connexion
-                document.getElementById('login-page').classList.remove('hidden');
+        <link rel="apple-touch-icon" href="/assets/icons/pwa/icon-152x152.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/assets/icons/pwa/icon-152x152.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/pwa/icon-192x192.png" />
+        <meta name="title" content="Build a trading bot without coding | Deriv Bot." />
+        <meta
+            name="description"
+            content="Import your current bot or learn how to create a trading bot from scratch with our detailed guides, FAQs, and tutorials. Start with a quick strategy!"
+        />
+        <meta property="og:title" content="Deriv Bot" />
+        <meta
+            property="og:description"
+            content="Import your current bot or learn how to create a trading bot from scratch with our detailed guides, FAQs, and tutorials. Start with a quick strategy!"
+        />
+        <title>Build a trading bot without coding | Deriv Bot.</title>
+        <style>
+            :root {
+                font-size: 62.5%;
             }
-        }
-    };
+        </style>
+    </head>
 
-    function logout() {
-        localStorage.removeItem('deriv_token');
-        localStorage.removeItem('deriv_acct');
-        location.reload();
-    }
+    <body class="body theme theme--light">
+        <div id="modal_root" class="modal-root"></div>
+        <div id="popup_root" class="popup-root"></div>
+        <div id="root"></div>
+        <script type="text/javascript" defer>
+            window.__lc = window.__lc || {};
+            window.__lc.license = 12049137;
+            window.__lc.asyncInit = true;
+            (function (n, t, c) {
+                function i(n) {
+                    return e._h ? e._h.apply(null, n) : e._q.push(n);
+                }
+                var e = {
+                    _q: [],
+                    _h: null,
+                    _v: '2.0',
+                    on: function () {
+                        i(['on', c.call(arguments)]);
+                    },
+                    once: function () {
+                        i(['once', c.call(arguments)]);
+                    },
+                    off: function () {
+                        i(['off', c.call(arguments)]);
+                    },
+                    get: function () {
+                        if (!e._h) throw new Error('[LiveChatWidget] You can’t use getters before load.');
+                        return i(['get', c.call(arguments)]);
+                    },
+                    call: function () {
+                        i(['call', c.call(arguments)]);
+                    },
+                    init: function () {
+                        setTimeout(() => {
+                            var n = t.createElement('script');
+                            ((n.async = !0),
+                                (n.type = 'text/javascript'),
+                                (n.src = 'https://cdn.livechatinc.com/tracking.js'),
+                                t.head.appendChild(n));
+                        }, 3000);
+                    },
+                };
+                (!n.__lc.asyncInit && e.init(), (n.LiveChatWidget = n.LiveChatWidget || e));
+            })(window, document, [].slice);
+        </script>
+        <script>
+            // Check browser compatibility and prevent service worker issues
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isFirefox = userAgent.includes('firefox');
+            const isSafari = userAgent.includes('safari') && !userAgent.includes('chrome');
+            const shouldSkipSW = isFirefox || isSafari;
 
-    // --- 2. INITIALISATION DE L'APP ---
-    
-    async function initApp(token) {
-        // Masquer login, afficher dashboard
-        document.getElementById('login-page').classList.add('hidden');
-        document.getElementById('dashboard-page').classList.remove('hidden');
+            if (shouldSkipSW) {
+                const browserName = isFirefox ? 'Firefox' : 'Safari';
+                console.log(
+                    `[HTML] ${browserName} detected - preventing service worker registration to avoid chunk loading issues`
+                );
 
-        // Connexion WebSocket
-        connection = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${app_id}`);
-        api = new DerivAPIBasic({ connection });
-
-        try {
-            const response = await api.authorize(token);
-            if(response.error) {
-                alert("Session expirée. Veuillez vous reconnecter.");
-                logout();
-                return;
+                // Cleanup any existing service workers
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker
+                        .getRegistrations()
+                        .then(registrations => {
+                            registrations.forEach(registration => {
+                                console.log(`[HTML] Unregistering existing SW for ${browserName}:`, registration.scope);
+                                registration.unregister();
+                            });
+                        })
+                        .catch(error => {
+                            console.error('[HTML] Failed to cleanup service workers:', error);
+                        });
+                }
             }
 
-            // Setup UI avec données réelles
-            const acc = response.authorize;
-            document.getElementById('user-balance').innerText = `$ ${acc.balance}`;
-            document.getElementById('user-id').innerText = `ID: ${acc.loginid}`;
-            currentStake = Number(document.getElementById('stake').value);
-            
-            // Abonnement aux mises à jour
-            api.subscribe({ balance: 1 });
-            api.subscribe({ proposal_open_contract: 1 });
-            
-            connection.addEventListener('message', (e) => {
-                const data = JSON.parse(e.data);
-                if(data.balance) {
-                    document.getElementById('user-balance').innerText = `$ ${data.balance.balance}`;
-                }
-                if(data.proposal_open_contract) {
-                    handleTradeResult(data.proposal_open_contract);
-                }
+            // Check online/offline status
+            console.log('[HTML] Online status:', navigator.onLine);
+            window.addEventListener('online', () => {
+                console.log('[HTML] Back online');
+            });
+            window.addEventListener('offline', () => {
+                console.log('[HTML] Gone offline');
             });
 
-            log("Connecté avec succès !");
-
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    // --- 3. LOGIQUE TRADING & BOT ---
-
-    const log = (msg) => {
-        const logs = document.getElementById('logs');
-        logs.innerHTML += `<div>> ${msg}</div>`;
-        logs.scrollTop = logs.scrollHeight;
-    }
-
-    async function trade(type) {
-        const amount = isAuto ? currentStake : document.getElementById('stake').value;
-        const duration = document.getElementById('duration').value;
-        const symbol = document.getElementById('symbol').value;
-
-        try {
-            const prop = await api.proposal({
-                proposal: 1, amount: amount, basis: 'stake',
-                contract_type: type, currency: 'USD', 
-                duration: duration, duration_unit: 't', symbol: symbol
-            });
-            
-            if(prop.error) {
-                log("Erreur: " + prop.error.message);
-                if(isAuto) stopBot(); // Sécurité
-                return;
+            // Listen for service worker messages if registered by PWA utils (non-problematic browsers only)
+            if ('serviceWorker' in navigator && !shouldSkipSW) {
+                navigator.serviceWorker.addEventListener('message', event => {
+                    console.log('[HTML] Message from service worker:', event.data);
+                });
             }
-
-            const buy = await api.buy({ buy: prop.proposal.id, price: prop.proposal.ask_price });
-            log(`Trade ${type} lancé ($${amount})...`);
-
-        } catch(e) {
-            log("Erreur : " + e.message);
-        }
-    }
-
-    function handleTradeResult(contract) {
-        if(contract.is_sold) {
-            const profit = Number(contract.profit);
-            if(profit > 0) {
-                log(`WIN: +$${profit}`);
-                if(isAuto) {
-                    currentStake = Number(document.getElementById('stake').value); // Reset
-                    setTimeout(() => trade('CALL'), 2000);
-                }
-            } else {
-                log(`LOSS: ${profit}`);
-                if(isAuto) {
-                    currentStake = currentStake * 2.1; // Martingale
-                    log(`Martingale -> $${currentStake.toFixed(2)}`);
-                    setTimeout(() => trade('CALL'), 2000);
-                }
-            }
-        }
-    }
-
-    // Boutons
-    document.getElementById('btn-call').onclick = () => !isAuto && trade('CALL');
-    document.getElementById('btn-put').onclick = () => !isAuto && trade('PUT');
-    
-    // Logique UI Bot
-    document.getElementById('strategy').onchange = (e) => {
-        const auto = e.target.value === 'martingale';
-        document.getElementById('bot-controls').classList.toggle('hidden', !auto);
-    };
-
-    document.getElementById('start-bot').onclick = () => {
-        isAuto = true;
-        document.getElementById('start-bot').classList.add('hidden');
-        document.getElementById('stop-bot').classList.remove('hidden');
-        currentStake = Number(document.getElementById('stake').value);
-        trade('CALL');
-    };
-
-    document.getElementById('stop-bot').onclick = stopBot;
-
-    function stopBot() {
-        isAuto = false;
-        document.getElementById('start-bot').classList.remove('hidden');
-        document.getElementById('stop-bot').classList.add('hidden');
-        log("Bot Arrêté.");
-    }
-
-  </script>
-</body>
+        </script>
+    </body>
 </html>
