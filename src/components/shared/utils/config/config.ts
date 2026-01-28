@@ -2,14 +2,14 @@ import { LocalStorageConstants, LocalStorageUtils, URLUtils } from '@deriv-com/u
 import { isStaging } from '../url/helpers';
 
 export const APP_IDS = {
-  LOCALHOST: 122869,
-  TMP_STAGING: 122869,
-  STAGING: 122869,
-  STAGING_BE: 122869,
-  STAGING_ME: 122869,
-  PRODUCTION: 122869,
-  PRODUCTION_BE: 122869,
-  PRODUCTION_ME: 122869,
+    LOCALHOST: 122869,
+    TMP_STAGING: 122869,
+    STAGING: 122869,
+    STAGING_BE: 122869,
+    STAGING_ME: 122869,
+    PRODUCTION: 122869,
+    PRODUCTION_BE: 122869,
+    PRODUCTION_ME: 122869,
 };
 
 export const livechat_license_id = 12049137;
@@ -149,7 +149,6 @@ export const generateOAuthURL = () => {
     const original_url = new URL(oauth_url);
     const hostname = window.location.hostname;
 
-    // First priority: Check for configured server URLs (for QA/testing environments)
     const configured_server_url = (LocalStorageUtils.getValue(LocalStorageConstants.configServerURL) ||
         localStorage.getItem('config.server_url')) as string;
 
@@ -162,20 +161,21 @@ export const generateOAuthURL = () => {
             : !valid_server_urls.includes(JSON.stringify(configured_server_url)))
     ) {
         original_url.hostname = configured_server_url;
-    } else if (original_url.hostname.includes('oauth.deriv.')) {
-        // Second priority: Domain-based OAuth URL setting for .me and .be domains
-        if (hostname.includes('.deriv.me')) {
+    } else {
+        // Correction cruciale : On force oauth.deriv.com pour éviter l'erreur sur vercel.app
+        if (hostname.includes('vercel.app') || !hostname.includes('deriv')) {
+            original_url.hostname = 'oauth.deriv.com';
+        } else if (hostname.includes('.deriv.me')) {
             original_url.hostname = 'oauth.deriv.me';
         } else if (hostname.includes('.deriv.be')) {
             original_url.hostname = 'oauth.deriv.be';
         } else {
-            // Fallback to original logic for other domains
-            const current_domain = getCurrentProductionDomain();
-            if (current_domain) {
-                const domain_suffix = current_domain.replace(/^[^.]+\./, '');
-                original_url.hostname = `oauth.${domain_suffix}`;
-            }
+            original_url.hostname = 'oauth.deriv.com';
         }
     }
-    return original_url.toString() || oauth_url;
+
+    // On force l'App ID correct dans les paramètres de l'URL
+    original_url.searchParams.set('app_id', '122869');
+
+    return original_url.toString();
 };
