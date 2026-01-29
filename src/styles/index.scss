@@ -1,21 +1,61 @@
 @use 'components/shared/styles/themes' as *;
 @import 'https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,400,500,700&display=swap&subset=cyrillic,cyrillic-ext,latin-ext,vietnamese';
 
+/* 1. Animation de couleur fluide (cycle de 10 minutes) */
+@keyframes glowCycle {
+    0%   { border-color: #00c6ff; box-shadow: 0 0 15px rgba(0, 198, 255, 0.4); }
+    33%  { border-color: #00ff88; box-shadow: 0 0 15px rgba(0, 255, 136, 0.4); }
+    66%  { border-color: #ff0077; box-shadow: 0 0 15px rgba(255, 0, 119, 0.4); }
+    100% { border-color: #00c6ff; box-shadow: 0 0 15px rgba(0, 198, 255, 0.4); }
+}
+
+/* 2. Style de la page */
 body {
     font-family: 'IBM Plex Sans', sans-serif;
     background: var(--general-main-1);
+    color: var(--text-general);
+    transition: background 0.5s ease;
 }
 
-.icon-general-fill-path {
-    path {
-        fill: var(--text-general);
-    }
+/* 3. Cadre des Bots (Effet Néon Animé) */
+/* Appliquez cette classe à vos cadres de bots sur GitHub */
+.bot-card-pro {
+    background: var(--general-section-1);
+    border: 2px solid #00c6ff;
+    border-radius: 16px;
+    padding: 20px;
+    margin: 10px;
+    transition: transform 0.3s ease;
+    animation: glowCycle 600s infinite linear; /* Change sur 10 minutes */
 }
 
-.icon-general-fill-g-path {
-    g {
-        path {
-            fill: var(--text-general);
-        }
-    }
+.bot-card-pro:hover {
+    transform: scale(1.02); /* Petit zoom quand on survole */
+}
+
+/* 4. Bouton de Lancement Éclatant */
+.btn-launch-glow {
+    background: linear-gradient(45deg, #ff4455, #ffcc00);
+    border: none;
+    color: white;
+    font-weight: bold;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255, 68, 85, 0.3);
+    transition: 0.3s;
+}
+
+.btn-launch-glow:hover {
+    filter: brightness(1.2);
+    box-shadow: 0 6px 20px rgba(255, 68, 85, 0.5);
+}
+
+/* Styles des icônes existants */
+.icon-general-fill-path path {
+    fill: var(--text-general);
+}
+
+.icon-general-fill-g-path g path {
+    fill: var(--text-general);
 }
